@@ -32,7 +32,7 @@ var (
 var (
 	DefaultExtensions     []string = []string{"epub", "azw3", "kepub", "epub3"}
 	DefaultBasedir        string   = "."
-	DefaultConnectionWait int64    = 5
+	DefaultConnectionWait int64    = 1
 	DefaultTrimKepub      bool     = false
 )
 
