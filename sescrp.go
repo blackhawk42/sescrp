@@ -38,7 +38,7 @@ var (
 
 // Flag variables
 var (
-	extensions     = flag.String("extensions", strings.Join(DefaultExtensions, ","), "`extensions` to look for in files, separated by commas; by default, and as of this writing, all StandardEbook formats should be supported")
+	extensions     = flag.String("formats", strings.Join(DefaultExtensions, ","), "`extensions` to look for in files, separated by commas; by default, and as of this writing, all StandardEbook formats should be supported")
 	basedir        = flag.String("dir", DefaultBasedir, "base `directory` where to download the files, and create it if necessary; a \".\" means the current directory")
 	connectionWait = flag.Int64("connection-wait", DefaultConnectionWait, "how many `seconds` to wait between *every* required HTTP connection, including parsing (*not* just between individual ebook file downloads); can be set to 0, but let's try to be nice to StandardEbook servers, if possible")
 	trimKepub      = flag.Bool("trim-kepub", DefaultTrimKepub, "download kepub files with the extension \".kepub\", instead of \".kepub.epub\"")
