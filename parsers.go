@@ -4,15 +4,52 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"path"
+	"sort"
 	"strings"
 
 	"golang.org/x/net/html"
 )
 
+// TesterFunction is a function that takes a string an preforms a test on it,
+// returning a boolean
+type TesterFunction func(string) bool
+
+// FormatsTestersMap is a map that maps a string key representing a format with a tester function.
+type FormatsTestersMap map[string]TesterFunction
+
+// GetKeys gets the sorted keys of the FormatsTestersMap
+func (fm FormatsTestersMap) GetKeys() []string {
+	keys := make([]string, 0, len(fm))
+
+	for k := range fm {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+
+	return keys
+}
+
+// FormatsTesters maps a format name to a function that tastes if a string conforms
+// to that format, according to naming conventions of files in Standard Ebooks.
+var FormatsTesters FormatsTestersMap = map[string]TesterFunction{
+	"epub": func(name string) bool {
+		return strings.HasSuffix(name, ".epub") && !strings.HasSuffix(name, ".kepub.epub") && !strings.HasSuffix(name, "_advanced.epub")
+	},
+	"azw3": func(name string) bool {
+		return strings.HasSuffix(name, ".azw3")
+	},
+	"kepub": func(name string) bool {
+		return strings.HasSuffix(name, ".kepub.epub")
+	},
+	"aepub": func(name string) bool {
+		return strings.HasSuffix(name, "_advanced.epub")
+	},
+}
+
 // EbookPageParser parses the page of an individual ebook.
 type EbookPageParser struct {
-	extensions []string
+	extensionsTesters []TesterFunction
 }
 
 // NewEbookPageParser creates a new EbookPageParser.
@@ -22,24 +59,19 @@ type EbookPageParser struct {
 // passed.
 func NewEbookPageParser(extensions string) (*EbookPageParser, error) {
 	extensionsSlice := strings.Split(extensions, ",")
+	extensionsTesters := make([]TesterFunction, 0, len(extensionsSlice))
 
-	for i, ext := range extensionsSlice {
-		switch ext {
-		case "epub":
-			extensionsSlice[i] = ".epub"
-		case "azw3":
-			extensionsSlice[i] = ".azw3"
-		case "kepub":
-			extensionsSlice[i] = ".kepub.epub"
-		case "epub3":
-			extensionsSlice[i] = ".epub3"
-		default:
+	for _, ext := range extensionsSlice {
+		fun, ok := FormatsTesters[ext]
+		if !ok {
 			return nil, fmt.Errorf("the extension \"%s\" is not supported", ext)
 		}
+
+		extensionsTesters = append(extensionsTesters, fun)
 	}
 
 	return &EbookPageParser{
-		extensions: extensionsSlice,
+		extensionsTesters: extensionsTesters,
 	}, nil
 }
 
@@ -55,7 +87,7 @@ func (ebookParser *EbookPageParser) Parse(htmlReader io.Reader) ([]*url.URL, err
 		return nil, err
 	}
 
-	finalUrls := make([]*url.URL, 0, len(ebookParser.extensions))
+	finalUrls := make([]*url.URL, 0, len(ebookParser.extensionsTesters))
 	err = nil
 
 	var parseF func(*html.Node)
@@ -91,15 +123,13 @@ func (ebookParser *EbookPageParser) Parse(htmlReader io.Reader) ([]*url.URL, err
 
 // Check if the given URL (in string form) matches any of the active extensions.
 func (ebookParser *EbookPageParser) urlMatches(url string) bool {
-	exts := strings.Split(path.Base(url), ".")
-
-	if len(exts) < 2 { // no extensions
-		return false
-	} else if len(exts) > 2 { // multiple extensions
-		return IsIn("."+strings.Join(exts[1:], "."), ebookParser.extensions)
-	} else {
-		return IsIn("."+exts[1], ebookParser.extensions)
+	for _, test := range ebookParser.extensionsTesters {
+		if test(url) {
+			return true
+		}
 	}
+
+	return false
 }
 
 // CollectionPageParser parses the page of an entire collection

@@ -4,17 +4,6 @@ import (
 	"net/url"
 )
 
-// IsIn checks if a given string exists in a slice of strings
-func IsIn(value string, slice []string) bool {
-	for _, v := range slice {
-		if v == value {
-			return true
-		}
-	}
-
-	return false
-}
-
 // MustParseURL attempts to parse an *url.URL from a string, with panic on error.
 func MustParseURL(rawURL string) *url.URL {
 	url, err := url.Parse(rawURL)
