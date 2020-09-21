@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-// StandardEbooksMainURL is the main url for the StandardEbooks website, for use
+// StandardEbooksMainURL is the main url for the Standard Ebooks website, for use
 // in things like URL parsing.
 var StandardEbooksMainURL = MustParseURL("https://standardebooks.org")
 
@@ -37,9 +37,9 @@ var (
 
 // Flag variables
 var (
-	extensions     = flag.String("formats", strings.Join(FormatsTesters.GetKeys(), ","), "`extensions` to look for in files, separated by commas; by default, and as of this writing, all StandardEbook formats should be supported: Advanced Epub, Epub, Kepub, y Azw3")
+	extensions     = flag.String("formats", strings.Join(FormatsTesters.GetKeys(), ","), "`extensions` to look for in files, separated by commas; by default, and as of this writing, all Standard Ebooks formats should be supported: Advanced Epub, Epub, Kepub, and Azw3")
 	basedir        = flag.String("dir", DefaultBasedir, "base `directory` where to download the files, and create it if necessary; a \".\" means the current directory")
-	connectionWait = flag.Int64("connection-wait", DefaultConnectionWait, "how many `seconds` to wait between *every* required HTTP connection, including parsing (*not* just between individual ebook file downloads); can be set to 0, but let's try to be nice to StandardEbook servers, if possible")
+	connectionWait = flag.Int64("connection-wait", DefaultConnectionWait, "how many `seconds` to wait between *every* required HTTP connection, including parsing (*not* just between individual ebook file downloads); can be set to 0, but let's try to be nice to Standard Ebooks servers, if possible")
 	trimKepub      = flag.Bool("trim-kepub", DefaultTrimKepub, "download kepub files with the extension \".kepub\", instead of \".kepub.epub\"")
 )
 
@@ -48,8 +48,8 @@ func main() {
 
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "usage: %s [FLAGS] URL [URL...]\n\n", filepath.Base(os.Args[0]))
-		fmt.Fprintf(flag.CommandLine.Output(), "Scrap ebook files from StandardEbooks.\n\n")
-		fmt.Fprintf(flag.CommandLine.Output(), "As of this date, StandardEbooks robots.txt is intentionally left blank (ha!), which is great on their part. Nevertheless, in consideration of not being an abusive scrapper, an effort was made to keep all connections one at a time and with a timer between them.\n\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "Scrap ebook files from Standard Ebooks.\n\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "As of this date, Standard Ebooks robots.txt is intentionally left blank (ha!), which is great on their part. Nevertheless, in consideration of not being an abusive scrapper, an effort was made to keep all connections one at a time and with a timer between them.\n\n")
 
 		flag.PrintDefaults()
 	}
