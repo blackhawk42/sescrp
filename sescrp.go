@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"io"
@@ -54,13 +55,42 @@ func main() {
 		flag.PrintDefaults()
 	}
 
+	// Process urls in text files
+	urlsToProcess := make([]string, 0)
+	flag.Func("in", "`file` with links to process; one link per line", func(filename string) error {
+		f, err := os.Open(filename)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		scanner := bufio.NewScanner(bufio.NewReader(f))
+		var line string
+		for scanner.Scan() {
+			line = scanner.Text()
+			if line != "" {
+				urlsToProcess = append(urlsToProcess, line)
+			}
+		}
+		err = scanner.Err()
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
 	flag.Parse()
 
-	// No arguments are equivalent to invoking help
-	if len(flag.Args()) == 0 {
+	// No arguments and no urls to process are equivalent to invoking help
+	if len(urlsToProcess) == 0 && len(flag.Args()) == 0 {
 		flag.Usage()
 		os.Exit(0)
 	}
+
+	// Concatenate all command line urls with the files. Give priority to command-line
+	// urls
+	urlsToProcess = append(flag.Args(), urlsToProcess...)
 
 	if *connectionWait < 0 {
 		fmt.Fprintf(os.Stderr, "error: time between connections can't be a negative number\n")
@@ -90,7 +120,7 @@ func main() {
 
 	// Timer initially set to expire inmediately
 	timer := time.NewTimer(0)
-	urls, err := NormalizeURLs(flag.Args(), *extensions, duration, timer, client)
+	urls, err := NormalizeURLs(urlsToProcess, *extensions, duration, timer, client)
 	if err != nil {
 		log.Fatal(err)
 	}
